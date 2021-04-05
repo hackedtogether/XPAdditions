@@ -16,6 +16,6 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
     @Override
     protected void addTags() {
         tag(ModTags.Blocks.STORAGE_BLOCKS_XP).add(ModBlocks.XP_BLOCK.get());
-        tag(Tags.Blocks.ORES).addTag(ModTags.Blocks.STORAGE_BLOCKS_XP);
+        tag(Tags.Blocks.STORAGE_BLOCKS).addTag(ModTags.Blocks.STORAGE_BLOCKS_XP);
     }
 }

@@ -17,7 +17,7 @@ public class ModItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags() {
         copy(ModTags.Blocks.STORAGE_BLOCKS_XP, ModTags.Items.STORAGE_BLOCKS_XP);
-        copy(Tags.Blocks.ORES, Tags.Items.ORES);
+        copy(Tags.Blocks.STORAGE_BLOCKS, Tags.Items.STORAGE_BLOCKS);
 
         tag(ModTags.Items.INGOTS_XP).add(ModItems.XP_INGOT.get());
         tag(Tags.Items.INGOTS).addTag(ModTags.Items.INGOTS_XP);
