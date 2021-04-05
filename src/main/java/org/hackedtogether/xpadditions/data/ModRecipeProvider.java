@@ -29,8 +29,4 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_item", has(ModItems.XP_INGOT.get()))
                 .save(consumer);
     }
-
-    private static ResourceLocation modId(String path) {
-        return new ResourceLocation(XPAdditions.MOD_ID, path);
-    }
 }
