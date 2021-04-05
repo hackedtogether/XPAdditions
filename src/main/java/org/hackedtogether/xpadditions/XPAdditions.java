@@ -1,9 +1,7 @@
 package org.hackedtogether.xpadditions;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
@@ -15,6 +13,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hackedtogether.xpadditions.setup.Registration;
 
 import java.util.stream.Collectors;
 
@@ -27,6 +26,8 @@ public class XPAdditions {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public XPAdditions() {
+        Registration.register();
+
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         // Register the enqueueIMC method for modloading
@@ -53,7 +54,7 @@ public class XPAdditions {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         // some example code to dispatch IMC to another mod
-        InterModComms.sendTo("examplemod", "helloworld", () -> {
+        InterModComms.sendTo(MOD_ID, "helloworld", () -> {
             LOGGER.info("Hello world from the MDK");
             return "Hello world";
         });
