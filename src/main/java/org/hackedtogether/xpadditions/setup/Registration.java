@@ -19,8 +19,8 @@ public class Registration {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
 
-//        ModBlocks.register();
-//        ModItems.register();
+        ModBlocks.register();
+        ModItems.register();
     }
 
     private static <T extends IForgeRegistryEntry<T>> DeferredRegister<T> create(IForgeRegistry<T> registry) {
