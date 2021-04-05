@@ -27,6 +27,8 @@ public final class DataGenerators {
         gen.addProvider(blockTags);
         gen.addProvider(itemTags);
 
+
         gen.addProvider(new ModLootTableProvider(gen));
+        gen.addProvider(new ModRecipeProvider(gen));
     }
 }
