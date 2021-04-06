@@ -2,6 +2,7 @@ package org.hackedtogether.xpadditions.data;
 
 import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.tags.BlockTags;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.hackedtogether.xpadditions.XPAdditions;
@@ -17,5 +18,6 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
     protected void addTags() {
         tag(ModTags.Blocks.STORAGE_BLOCKS_XP).add(ModBlocks.XP_BLOCK.get());
         tag(Tags.Blocks.STORAGE_BLOCKS).addTag(ModTags.Blocks.STORAGE_BLOCKS_XP);
+        tag(BlockTags.BEACON_BASE_BLOCKS).addTag(ModTags.Blocks.STORAGE_BLOCKS_XP);
     }
 }
