@@ -15,13 +15,14 @@ public class ModBlockStateProvider extends BlockStateProvider {
     @Override
     protected void registerStatesAndModels() {
         simpleBlock(ModBlocks.XP_BLOCK.get());
-        getVariantBuilder(ModBlocks.XP_BARREL.get()).forAllStates(state -> {
-            return ConfiguredModel.builder()
+
+        getVariantBuilder(ModBlocks.XP_BARREL.get()).forAllStates(state ->
+            ConfiguredModel.builder()
                     .modelFile(models().cubeBottomTop("xp_barrel",
                             modLoc("block/xp_barrel_side"),
                             modLoc("block/xp_barrel_bottom"),
                             modLoc("block/xp_barrel_top")))
-                    .build();
-        });
+                    .build()
+        );
     }
 }
