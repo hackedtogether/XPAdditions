@@ -1,4 +1,4 @@
-package org.hackedtogether.xpadditions.block.xpbarrel;
+package org.hackedtogether.xpadditions.common.block;
 
 import net.minecraft.block.Block;
 
