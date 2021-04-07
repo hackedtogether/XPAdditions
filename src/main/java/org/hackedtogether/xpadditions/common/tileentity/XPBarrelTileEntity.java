@@ -5,8 +5,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import org.hackedtogether.xpadditions.common.registries.ModTileEntityTypes;
 import org.hackedtogether.xpadditions.util.XPUtils;
+import org.hackedtogether.xpadditions.common.registries.ModTileEntityTypes;
 
 public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntity {
 
@@ -75,7 +75,7 @@ public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntit
 
     public void transferXPFromPlayer(PlayerEntity player, int xp) {
         if (xp > 0) {
-            player.giveExperiencePoints(-xp);
+            XPUtils.addPlayerXP(player, -xp);
             this.addXP(xp);
         }
     }
