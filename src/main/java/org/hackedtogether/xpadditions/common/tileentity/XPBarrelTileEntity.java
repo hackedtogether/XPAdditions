@@ -66,6 +66,8 @@ public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntit
             xpToMove = xpForCurrentLevel - XPUtils.getXPForLevel(player.experienceLevel - 1);
         }
 
+        xpToMove = Math.min(this.getRemainingSpace(), xpToMove);
+
         transferXPFromPlayer(player, xpToMove);
     }
 
