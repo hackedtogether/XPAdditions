@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraftforge.fml.RegistryObject;
-import org.hackedtogether.xpadditions.block.xpbarrel.XPBarrelBlock;
+import org.hackedtogether.xpadditions.common.block.XPBarrelBlock;
 import org.hackedtogether.xpadditions.common.registration.ModBlockRegister;
 
 public class ModBlocks {

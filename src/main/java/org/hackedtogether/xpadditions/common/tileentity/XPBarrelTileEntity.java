@@ -3,7 +3,7 @@ package org.hackedtogether.xpadditions.common.tileentity;
 import net.minecraft.block.Blocks;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import org.hackedtogether.xpadditions.setup.ModTileEntityTypes;
+import org.hackedtogether.xpadditions.common.registries.ModTileEntityTypes;
 
 public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntity {
 
