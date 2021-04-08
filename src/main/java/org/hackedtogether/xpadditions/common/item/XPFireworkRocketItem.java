@@ -1,27 +1,97 @@
 package org.hackedtogether.xpadditions.common.item;
 
+import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hackedtogether.xpadditions.util.XPUtils;
 
+import java.util.concurrent.TimeUnit;
+
 public class XPFireworkRocketItem extends Item {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final int maxBoostDuration = 5;
-    private static final int xpPerSecond = 2;
+    private static final int xpPerSecondOfBoost = 2;
+    private static final int defaultXPPerExplosionOrb = 10;
+    private static final int defaultOrbsPerExplosion = 10;
 
     public XPFireworkRocketItem(Properties properties) {
         super(properties);
+    }
+
+    // TODO: Work out how to do an XP firework explosion
+    public ActionResultType useOn(ItemUseContext context) {
+        World world = context.getLevel();
+        if (!world.isClientSide) {
+            ItemStack itemstack = context.getItemInHand();
+            Vector3d vector3d = context.getClickLocation();
+            Direction direction = context.getClickedFace();
+            PlayerEntity player = context.getPlayer();
+
+            // Create the firework
+            FireworkRocketEntity fireworkrocketentity = new FireworkRocketEntity(world, context.getPlayer(), vector3d.x + (double)direction.getStepX() * 0.15D, vector3d.y + (double)direction.getStepY() * 0.15D, vector3d.z + (double)direction.getStepZ() * 0.15D, itemstack);
+            world.addFreshEntity(fireworkrocketentity);
+
+            // Wait for the firework before exploding XP
+            // TODO: The sound is being delayed because of this. Needs to be scheduled
+            // TODO: How does the regular firework delay its explosion sound?
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            int xpPerExplosionOrb = defaultXPPerExplosionOrb;
+            int orbsPerExplosion = defaultOrbsPerExplosion;
+            int playerXP = XPUtils.getPlayerXP(player);
+            int xpToUse = xpPerExplosionOrb * orbsPerExplosion;
+            int remainder = 0;
+
+            // If they don't have enough XP, reduce the explosion size
+            if (playerXP < xpToUse) {
+
+                // If there isn't enough XP for every orb, reduce the number of orbs
+                if (playerXP < orbsPerExplosion) {
+                    orbsPerExplosion = playerXP;
+                }
+
+                xpPerExplosionOrb = (int) Math.floor(playerXP / orbsPerExplosion);
+                remainder = playerXP % orbsPerExplosion;
+                xpToUse = playerXP;
+            }
+
+            // Remove the player's XP
+            XPUtils.addPlayerXP(player, -xpToUse);
+            LOGGER.debug(String.format("Removing %d XP from player", xpToUse));
+
+            // Calculate where the explosion should be
+            BlockPos pos = context.getClickedPos().above(10);
+
+            // Create the XP orbs
+            LOGGER.debug("XP explosion at " + pos);
+            for (int i = 0; i < orbsPerExplosion; i++) {
+                spawnXPOrb(world, pos, xpPerExplosionOrb);
+            }
+            if (remainder > 0) {
+                spawnXPOrb(world, pos, remainder);
+            }
+
+            // Play the explosion sound
+            fireworkrocketentity.playSound(SoundEvents.FIREWORK_ROCKET_BLAST, 1F, 1F);
+        }
+
+        return ActionResultType.sidedSuccess(world.isClientSide);
     }
 
     public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
@@ -55,10 +125,10 @@ public class XPFireworkRocketItem extends Item {
             if (!world.isClientSide) {
 
                 int boostDuration = this.getBoostDuration(stack);
-                int xpToUse = xpPerSecond * boostDuration;
+                int xpToUse = xpPerSecondOfBoost * boostDuration;
                 int playerXP = XPUtils.getPlayerXP(player);
 
-                // Check if they have any XP
+                // Check if the player has any XP
                 if (playerXP == 0) {
                     return ActionResult.fail(player.getItemInHand(hand));
                 }
@@ -95,7 +165,7 @@ public class XPFireworkRocketItem extends Item {
         tag.putByte("Duration", duration);
     }
 
-    private int changeBoostDuration(ItemStack stack) {
+    protected int changeBoostDuration(ItemStack stack) {
         byte boostDuration = this.getBoostDuration(stack);
         if (boostDuration < this.maxBoostDuration) {
             boostDuration++;
@@ -104,5 +174,11 @@ public class XPFireworkRocketItem extends Item {
         }
         setBoostDuration(stack, boostDuration);
         return boostDuration;
+    }
+
+    protected void spawnXPOrb(World world, BlockPos pos, int value) {
+        ExperienceOrbEntity experienceOrbEntity = new ExperienceOrbEntity(world, pos.getX(), pos.getY(), pos.getZ(), value);
+        world.addFreshEntity(experienceOrbEntity);
+        LOGGER.debug(String.format("Spawn XP orb at %s with value: %d", pos, value));
     }
 }
