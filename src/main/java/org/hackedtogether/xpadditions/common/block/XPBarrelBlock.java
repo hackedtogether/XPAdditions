@@ -63,9 +63,9 @@ public class XPBarrelBlock extends Block {
 
             // Should we move all XP or just 1 level
             if (player.isCrouching()) {
-                te.transferAllXPFromPlayer(player);
+                te.drainAllXPFromPlayer(player);
             } else {
-                te.transferXPLevelFromPlayer(player);
+                te.drainXPLevelFromPlayer(player);
             }
 
             LOGGER.debug("after player xp level: " + player.experienceLevel);

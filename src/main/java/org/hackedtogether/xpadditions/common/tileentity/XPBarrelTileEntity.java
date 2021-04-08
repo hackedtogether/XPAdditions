@@ -56,7 +56,7 @@ public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntit
         return Math.min(this.getRemainingSpace(), player.totalExperience);
     }
 
-    public void transferXPLevelFromPlayer(PlayerEntity player) {
+    public void drainXPLevelFromPlayer(PlayerEntity player) {
 
         int xpForCurrentLevel = XPUtils.getXPForLevel(player.experienceLevel);
         int xpToMove = XPUtils.getPlayerXP(player) - xpForCurrentLevel;
@@ -68,14 +68,14 @@ public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntit
 
         xpToMove = Math.min(this.getRemainingSpace(), xpToMove);
 
-        transferXPFromPlayer(player, xpToMove);
+        drainXPFromPlayer(player, xpToMove);
     }
 
-    public void transferAllXPFromPlayer(PlayerEntity player) {
-        transferXPFromPlayer(player, this.getMaxTransferableXP(player));
+    public void drainAllXPFromPlayer(PlayerEntity player) {
+        drainXPFromPlayer(player, this.getMaxTransferableXP(player));
     }
 
-    public void transferXPFromPlayer(PlayerEntity player, int xp) {
+    public void drainXPFromPlayer(PlayerEntity player, int xp) {
         if (xp > 0) {
             XPUtils.addPlayerXP(player, -xp);
             this.addXP(xp);
