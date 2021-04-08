@@ -1,6 +1,7 @@
 package org.hackedtogether.xpadditions.data;
 
 import net.minecraft.data.*;
+import net.minecraft.item.Items;
 import org.hackedtogether.xpadditions.common.registries.ModBlocks;
 import org.hackedtogether.xpadditions.common.registries.ModItems;
 
@@ -24,6 +25,13 @@ public class ModRecipeProvider extends RecipeProvider {
                 .pattern("###")
                 .pattern("###")
                 .unlockedBy("has_item", has(ModItems.XP_INGOT.get()))
+                .save(consumer);
+
+        ShapelessRecipeBuilder.shapeless(ModItems.XP_FIREWORK_ROCKET.get(), 1)
+                .requires(ModItems.XP_INGOT.get())
+                .requires(Items.FIREWORK_ROCKET)
+                .unlockedBy("has_xp_ingot", has(ModItems.XP_INGOT.get()))
+                .unlockedBy("has_firework_rocket", has(Items.FIREWORK_ROCKET))
                 .save(consumer);
     }
 }
