@@ -32,6 +32,10 @@ public class XPFireworkRocketItem extends Item {
 
         ItemStack stack = player.getItemInHand(hand);
 
+        // TODO: Server doesn't detect crouching so runs code for changing boost duration and boosting
+        LOGGER.debug("Crouching: " + player.isCrouching());
+        LOGGER.debug("Flying:    " + player.isFallFlying());
+
         // Check if the player is crouching (Change boost duration)
         if (player.isCrouching()) {
 
