@@ -1,4 +1,4 @@
-package org.hackedtogether.xpadditions.setup;
+package org.hackedtogether.xpadditions.common.tags;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -23,7 +23,6 @@ public class ModTags {
 
     public static final class Items {
         public static final ITag.INamedTag<Item> STORAGE_BLOCKS_XP = forge("storage_blocks/xp");
-
         public static final ITag.INamedTag<Item> INGOTS_XP = forge("ingots/xp");
 
         private static ITag.INamedTag<Item> forge(String path) {

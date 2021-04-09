@@ -1,11 +1,8 @@
 package org.hackedtogether.xpadditions.data;
 
 import net.minecraft.data.*;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.ResourceLocation;
-import org.hackedtogether.xpadditions.XPAdditions;
-import org.hackedtogether.xpadditions.setup.ModBlocks;
-import org.hackedtogether.xpadditions.setup.ModItems;
+import org.hackedtogether.xpadditions.common.registries.ModBlocks;
+import org.hackedtogether.xpadditions.common.registries.ModItems;
 
 import java.util.function.Consumer;
 

@@ -5,8 +5,8 @@ import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.hackedtogether.xpadditions.XPAdditions;
-import org.hackedtogether.xpadditions.setup.ModBlocks;
-import org.hackedtogether.xpadditions.setup.ModTags;
+import org.hackedtogether.xpadditions.common.registries.ModBlocks;
+import org.hackedtogether.xpadditions.common.tags.ModTags;
 
 public class ModBlockTagsProvider extends BlockTagsProvider {
     public ModBlockTagsProvider(DataGenerator generatorIn, ExistingFileHelper existingFileHelper) {

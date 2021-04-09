@@ -1,0 +1,14 @@
+package org.hackedtogether.xpadditions.common.registration;
+
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+public class Registration {
+
+    public static void register() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        new BlockRegister(modEventBus);
+        new ItemRegister(modEventBus);
+    }
+}
