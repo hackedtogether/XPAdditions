@@ -8,7 +8,7 @@ public class Registration {
     public static void register() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        new BlockRegister(modEventBus);
-        new ItemRegister(modEventBus);
+        new ModBlockRegister(modEventBus);
+        new ModItemRegister(modEventBus);
     }
 }

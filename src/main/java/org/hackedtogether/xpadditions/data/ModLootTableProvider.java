@@ -10,7 +10,7 @@ import net.minecraft.loot.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.RegistryObject;
 import org.hackedtogether.xpadditions.common.registries.ModBlocks;
-import org.hackedtogether.xpadditions.common.registration.BlockRegister;
+import org.hackedtogether.xpadditions.common.registration.ModBlockRegister;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class ModLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return BlockRegister.BLOCKS.getEntries().stream()
+            return ModBlockRegister.BLOCKS.getEntries().stream()
                     .map(RegistryObject::get)
                     .collect(Collectors.toList());
         }

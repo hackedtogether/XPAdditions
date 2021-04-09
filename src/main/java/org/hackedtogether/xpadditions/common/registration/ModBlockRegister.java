@@ -13,11 +13,11 @@ import org.hackedtogether.xpadditions.common.registries.ModBlocks;
 
 import java.util.function.Supplier;
 
-public class BlockRegister {
+public class ModBlockRegister {
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, XPAdditions.MOD_ID);
 
-    public BlockRegister(IEventBus modEventBus) {
+    public ModBlockRegister(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         ModBlocks.register();
     }
@@ -28,7 +28,7 @@ public class BlockRegister {
 
     public static <T extends Block> RegistryObject<T> register(String name, Supplier<T> block) {
         RegistryObject<T> ret = registerNoItem(name, block);
-        ItemRegister.ITEMS.register(name, () -> new BlockItem(ret.get(), new Item.Properties().tab(ItemGroup.TAB_BUILDING_BLOCKS)));
+        ModItemRegister.ITEMS.register(name, () -> new BlockItem(ret.get(), new Item.Properties().tab(ItemGroup.TAB_BUILDING_BLOCKS)));
         return ret;
     }
 }

@@ -10,11 +10,11 @@ import org.hackedtogether.xpadditions.common.registries.ModItems;
 
 import java.util.function.Supplier;
 
-public class ItemRegister {
+public class ModItemRegister {
 
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, XPAdditions.MOD_ID);
 
-    public ItemRegister(IEventBus modEventBus) {
+    public ModItemRegister(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
         ModItems.register();
     }
