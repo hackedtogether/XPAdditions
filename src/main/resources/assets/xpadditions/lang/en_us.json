@@ -3,5 +3,5 @@
   "block.xpadditions.xp_block": "XP Block",
   "block.xpadditions.xp_barrel": "XP Barrel",
   "item.xpadditions.xp_firework_rocket": "XP Firework Rocket",
-  "message.xpadditions.change_boost_duration": "Boost duration: %s/%s"
+  "message.xpadditions.change_flight_duration": "Flight duration: %s/%s"
 }

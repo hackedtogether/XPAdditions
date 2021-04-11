@@ -1,37 +1,37 @@
 package org.hackedtogether.xpadditions.common.item;
 
-import net.minecraft.entity.item.ExperienceOrbEntity;
+import com.google.common.collect.Lists;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hackedtogether.xpadditions.common.entity.XPFireworkRocketEntity;
 import org.hackedtogether.xpadditions.util.XPUtils;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public class XPFireworkRocketItem extends Item {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final int maxBoostDuration = 5;
     private static final int xpPerSecondOfBoost = 2;
-    private static final int defaultXPPerExplosionOrb = 10;
-    private static final int defaultOrbsPerExplosion = 10;
+    private static final int defaultXPPerExplosion = 100;
+
+    private int flightDuration = 1;
 
     public XPFireworkRocketItem(Properties properties) {
         super(properties);
     }
 
-    // TODO: Work out how to do an XP firework explosion
     public ActionResultType useOn(ItemUseContext context) {
+
         World world = context.getLevel();
         if (!world.isClientSide) {
             ItemStack itemstack = context.getItemInHand();
@@ -39,56 +39,31 @@ public class XPFireworkRocketItem extends Item {
             Direction direction = context.getClickedFace();
             PlayerEntity player = context.getPlayer();
 
-            // Create the firework
-            FireworkRocketEntity fireworkrocketentity = new FireworkRocketEntity(world, context.getPlayer(), vector3d.x + (double)direction.getStepX() * 0.15D, vector3d.y + (double)direction.getStepY() * 0.15D, vector3d.z + (double)direction.getStepZ() * 0.15D, itemstack);
-            world.addFreshEntity(fireworkrocketentity);
+            LOGGER.debug("PlayerEntity: '" + player.getUUID() + "' launching XP firework rocket");
 
-            // Wait for the firework before exploding XP
-            // TODO: The sound is being delayed because of this. Needs to be scheduled
-            // TODO: How does the regular firework delay its explosion sound?
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            int xpPerExplosionOrb = defaultXPPerExplosionOrb;
-            int orbsPerExplosion = defaultOrbsPerExplosion;
+            int xpToUse = defaultXPPerExplosion;
             int playerXP = XPUtils.getPlayerXP(player);
-            int xpToUse = xpPerExplosionOrb * orbsPerExplosion;
-            int remainder = 0;
 
-            // If they don't have enough XP, reduce the explosion size
-            if (playerXP < xpToUse) {
+            // Creative players can create XP
+            if (!player.isCreative()) {
 
-                // If there isn't enough XP for every orb, reduce the number of orbs
-                if (playerXP < orbsPerExplosion) {
-                    orbsPerExplosion = playerXP;
+                // If they don't have enough XP, reduce the explosion size
+                if (playerXP < xpToUse) {
+                    xpToUse = playerXP;
                 }
 
-                xpPerExplosionOrb = (int) Math.floor(playerXP / orbsPerExplosion);
-                remainder = playerXP % orbsPerExplosion;
-                xpToUse = playerXP;
+                // Remove the player's XP
+                XPUtils.addPlayerXP(player, -xpToUse);
+                LOGGER.debug(String.format("Removing %d XP from player", xpToUse));
             }
 
-            // Remove the player's XP
-            XPUtils.addPlayerXP(player, -xpToUse);
-            LOGGER.debug(String.format("Removing %d XP from player", xpToUse));
+            // Add the explosion to the firework
+            // TODO: Can we add this data earlier?
+            this.save(itemstack);
 
-            // Calculate where the explosion should be
-            BlockPos pos = context.getClickedPos().above(10);
-
-            // Create the XP orbs
-            LOGGER.debug("XP explosion at " + pos);
-            for (int i = 0; i < orbsPerExplosion; i++) {
-                spawnXPOrb(world, pos, xpPerExplosionOrb);
-            }
-            if (remainder > 0) {
-                spawnXPOrb(world, pos, remainder);
-            }
-
-            // Play the explosion sound
-            fireworkrocketentity.playSound(SoundEvents.FIREWORK_ROCKET_BLAST, 1F, 1F);
+            // Create the firework
+            XPFireworkRocketEntity xpFireworkRocketEntity = new XPFireworkRocketEntity(world, vector3d.x + (double)direction.getStepX() * 0.15D, vector3d.y + (double)direction.getStepY() * 0.15D, vector3d.z + (double)direction.getStepZ() * 0.15D, itemstack, xpToUse);
+            world.addFreshEntity(xpFireworkRocketEntity);
         }
 
         return ActionResultType.sidedSuccess(world.isClientSide);
@@ -109,14 +84,16 @@ public class XPFireworkRocketItem extends Item {
         // Check if the player is crouching (Change boost duration)
         if (player.isCrouching()) {
 
+            // TODO: This is being called twice
+
             // Change/fetch the boost duration
-            int boostDuration = this.changeBoostDuration(stack);
+            this.changeFlightDuration(stack);
 
             // Display a message and play a sound
-            player.displayClientMessage(new TranslationTextComponent("message.xpadditions.change_boost_duration", boostDuration, maxBoostDuration), true);
+            player.displayClientMessage(new TranslationTextComponent("message.xpadditions.change_flight_duration", this.flightDuration, maxBoostDuration), true);
             player.playSound(SoundEvents.STONE_BUTTON_CLICK_OFF, 1F, 1F);
 
-            LOGGER.debug(String.format("Set boost duration to %d/%d", boostDuration, maxBoostDuration));
+            LOGGER.debug(String.format("Set boost duration to %d/%d", this.flightDuration, maxBoostDuration));
             return ActionResult.pass(player.getItemInHand(hand));
         }
 
@@ -124,8 +101,8 @@ public class XPFireworkRocketItem extends Item {
         else if (player.isFallFlying()) {
             if (!world.isClientSide) {
 
-                int boostDuration = this.getBoostDuration(stack);
-                int xpToUse = xpPerSecondOfBoost * boostDuration;
+                int flightDuration = this.flightDuration;
+                int xpToUse = xpPerSecondOfBoost * flightDuration;
                 int playerXP = XPUtils.getPlayerXP(player);
 
                 // Check if the player has any XP
@@ -135,16 +112,15 @@ public class XPFireworkRocketItem extends Item {
 
                 // If they don't have enough XP, reduce the boost duration
                 if (playerXP < xpToUse) {
-                    boostDuration = (int) Math.ceil(boostDuration * (playerXP / xpToUse));
+                    flightDuration = (int) Math.ceil(flightDuration * (playerXP / xpToUse));
                     xpToUse = playerXP;
                 }
 
                 // Boost
-                stack.getOrCreateTagElement("Fireworks").putByte("Flight", (byte) boostDuration);
-                world.addFreshEntity(new FireworkRocketEntity(world, stack, player));
+                world.addFreshEntity(new FireworkRocketEntity(world, getNonExplosiveCopy(stack, flightDuration), player));
                 XPUtils.addPlayerXP(player, -(xpToUse));
 
-                LOGGER.debug(String.format("Boosting for %s seconds (Cost %d XP)", boostDuration, xpToUse));
+                LOGGER.debug(String.format("Boosting for %s seconds (Cost %d XP)", flightDuration, xpToUse));
             }
             return ActionResult.sidedSuccess(player.getItemInHand(hand), world.isClientSide());
         } else {
@@ -152,33 +128,53 @@ public class XPFireworkRocketItem extends Item {
         }
     }
 
-    protected byte getBoostDuration(ItemStack stack) {
-        CompoundNBT tag = stack.getOrCreateTag();
-        if (tag.contains("Duration")) {
-            return tag.getByte("Duration");
-        }
-        return 1;
+    protected void save(ItemStack stack) {
+
+        // Colors
+        List<Integer> colors = Lists.newArrayList();
+        colors.add(DyeColor.LIME.getFireworkColor());
+        colors.add(DyeColor.YELLOW.getFireworkColor());
+
+        // Explosion tags
+        CompoundNBT explosion = new CompoundNBT();
+
+        // Set explosion values
+        explosion.putByte("Type", (byte) FireworkRocketItem.Shape.LARGE_BALL.getId());
+        explosion.putBoolean("Flicker", true);
+        explosion.putBoolean("Trail", true);
+        explosion.putIntArray("Colors", colors);
+        explosion.putIntArray("FadeColors", colors);
+
+        // Add explosion tags to NBTList
+        ListNBT explosions = new ListNBT();
+        explosions.add(explosion);
+
+        // Fireworks
+        CompoundNBT fireworks = stack.getOrCreateTagElement("Fireworks");
+        fireworks.putByte("Flight", (byte) this.flightDuration);
+        fireworks.put("Explosions", explosions);
     }
 
-    protected void setBoostDuration(ItemStack stack, byte duration) {
-        CompoundNBT tag = stack.getOrCreateTag();
-        tag.putByte("Duration", duration);
+    protected void load(ItemStack stack) {
+        CompoundNBT fireworks = stack.getOrCreateTagElement("Fireworks");
+        this.flightDuration = (int) fireworks.getByte("Flight");
     }
 
-    protected int changeBoostDuration(ItemStack stack) {
-        byte boostDuration = this.getBoostDuration(stack);
-        if (boostDuration < this.maxBoostDuration) {
-            boostDuration++;
+    protected void changeFlightDuration(ItemStack stack) {
+        this.load(stack);
+        if (this.flightDuration < this.maxBoostDuration) {
+            this.flightDuration++;
         } else {
-            boostDuration = 1;
+            this.flightDuration = 1;
         }
-        setBoostDuration(stack, boostDuration);
-        return boostDuration;
+        this.save(stack);
     }
 
-    protected void spawnXPOrb(World world, BlockPos pos, int value) {
-        ExperienceOrbEntity experienceOrbEntity = new ExperienceOrbEntity(world, pos.getX(), pos.getY(), pos.getZ(), value);
-        world.addFreshEntity(experienceOrbEntity);
-        LOGGER.debug(String.format("Spawn XP orb at %s with value: %d", pos, value));
+    protected ItemStack getNonExplosiveCopy(ItemStack stack, int flightDuration) {
+        ItemStack nonExplosiveStack = stack.copy();
+        CompoundNBT fireworks = nonExplosiveStack.getOrCreateTagElement("Fireworks");
+        fireworks.remove("Explosions");
+        fireworks.putByte("Flight", (byte) flightDuration);
+        return nonExplosiveStack;
     }
 }
