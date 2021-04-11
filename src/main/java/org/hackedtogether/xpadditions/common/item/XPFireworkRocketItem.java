@@ -1,6 +1,7 @@
 package org.hackedtogether.xpadditions.common.item;
 
 import com.google.common.collect.Lists;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.*;
@@ -8,13 +9,18 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.*;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hackedtogether.xpadditions.common.entity.XPFireworkRocketEntity;
 import org.hackedtogether.xpadditions.util.XPUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class XPFireworkRocketItem extends Item {
@@ -125,6 +131,16 @@ public class XPFireworkRocketItem extends Item {
             return ActionResult.sidedSuccess(player.getItemInHand(hand), world.isClientSide());
         } else {
             return ActionResult.pass(player.getItemInHand(hand));
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> list, ITooltipFlag p_77624_4_) {
+        CompoundNBT compoundnbt = stack.getTagElement("Fireworks");
+        if (compoundnbt != null) {
+            if (compoundnbt.contains("Flight", 99)) {
+                list.add((new TranslationTextComponent("item.minecraft.firework_rocket.flight")).append(" ").append(String.valueOf((int)compoundnbt.getByte("Flight"))).withStyle(TextFormatting.GRAY));
+            }
         }
     }
 
