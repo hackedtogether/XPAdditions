@@ -49,14 +49,12 @@ public class XPFireworkRocketItem extends Item {
 
             // Change/fetch the boost duration
             this.changeFlightDuration(player, itemstack);
-        }
-
-        else if (!world.isClientSide) {
+        } else if (!world.isClientSide) {
 
             LOGGER.debug("PlayerEntity: '" + player.getUUID() + "' launching XP firework rocket");
 
             int xpToUse = defaultXPPerExplosion;
-            int playerXP = XPUtils.getPlayerXP(player);
+            int playerXP = XPUtils.getTotalXPOfPlayer(player);
 
             // Creative players can create XP
             if (!player.isCreative()) {
@@ -67,7 +65,7 @@ public class XPFireworkRocketItem extends Item {
                 }
 
                 // Remove the player's XP
-                XPUtils.addPlayerXP(player, -xpToUse);
+                XPUtils.addXPToPlayer(player, -xpToUse);
                 LOGGER.debug(String.format("Removing %d XP from player", xpToUse));
             }
 
@@ -111,7 +109,7 @@ public class XPFireworkRocketItem extends Item {
 
                 int flightDuration = this.flightDuration;
                 int xpToUse = xpPerSecondOfBoost * flightDuration;
-                int playerXP = XPUtils.getPlayerXP(player);
+                int playerXP = XPUtils.getTotalXPOfPlayer(player);
 
                 // Check if the player has any XP
                 if (playerXP == 0) {
@@ -126,7 +124,7 @@ public class XPFireworkRocketItem extends Item {
 
                 // Boost
                 world.addFreshEntity(new FireworkRocketEntity(world, getNonExplosiveCopy(stack, flightDuration), player));
-                XPUtils.addPlayerXP(player, -(xpToUse));
+                XPUtils.addXPToPlayer(player, -(xpToUse));
 
                 LOGGER.debug(String.format("Boosting for %s seconds (Cost %d XP)", flightDuration, xpToUse));
             }
@@ -141,7 +139,7 @@ public class XPFireworkRocketItem extends Item {
         CompoundNBT compoundnbt = stack.getTagElement("Fireworks");
         if (compoundnbt != null) {
             if (compoundnbt.contains("Flight", 99)) {
-                list.add((new TranslationTextComponent("item.minecraft.firework_rocket.flight")).append(" ").append(String.valueOf((int)compoundnbt.getByte("Flight"))).withStyle(TextFormatting.GRAY));
+                list.add((new TranslationTextComponent("item.minecraft.firework_rocket.flight")).append(" ").append(String.valueOf((int) compoundnbt.getByte("Flight"))).withStyle(TextFormatting.GRAY));
             }
         }
     }
