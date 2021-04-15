@@ -4,46 +4,64 @@ import net.minecraft.entity.player.PlayerEntity;
 
 public class XPUtils {
 
-    public static int getPlayerXP(PlayerEntity player) {
-        return (int)(XPUtils.getXPForLevel(player.experienceLevel) + (player.experienceProgress * player.getXpNeededForNextLevel()));
+    public static int getTotalXPOfPlayer(PlayerEntity player) {
+        return (int) (XPUtils.convertLevelToXP(player.experienceLevel) + (player.experienceProgress * player.getXpNeededForNextLevel()));
     }
 
-    public static void addPlayerXP(PlayerEntity player, int amount) {
-        int experience = getPlayerXP(player) + amount;
-        player.totalExperience = experience;
-        player.experienceLevel = XPUtils.getLevelForXP(experience);
-        int expForLevel = XPUtils.getXPForLevel(player.experienceLevel);
-        player.experienceProgress = (float)(experience - expForLevel) / (float)player.getXpNeededForNextLevel();
-    }
+    public static void addXPToPlayer(PlayerEntity player, int amount) {
+        int experience = getTotalXPOfPlayer(player) + amount;
+        if (experience < 0) {
 
-    public static int xpBarCap(int level) {
-        if (level >= 30)
-            return 112 + (level - 30) * 9;
-
-        if (level >= 15)
-            return 37 + (level - 15) * 5;
-
-        return 7 + level * 2;
-    }
-
-    private static int sum(int n, int a0, int d) {
-        return n * (2 * a0 + (n - 1) * d) / 2;
-    }
-
-    public static int getLevelForXP(int xp) {
-        int level = 0;
-        while (true) {
-            final int xpToNextLevel = xpBarCap(level);
-            if (xp < xpToNextLevel) return level;
-            level++;
-            xp -= xpToNextLevel;
         }
+        player.totalExperience = experience;
+        player.experienceLevel = XPUtils.convertXPToLevels(experience);
+        int expForLevel = XPUtils.convertLevelToXP(player.experienceLevel);
+        player.experienceProgress = (float) (experience - expForLevel) / (float) player.getXpNeededForNextLevel();
     }
 
-    public static int getXPForLevel(int level) {
-        if (level == 0) return 0;
-        if (level <= 15) return sum(level, 7, 2);
-        if (level <= 30) return 315 + sum(level - 15, 37, 5);
-        return 1395 + sum(level - 30, 112, 9);
+    public static int xpForNextLevel(int level) {
+        return convertLevelToXP(level + 1) - convertLevelToXP(level);
+    }
+
+    public static int convertXPToLevels(int xp) {
+        int level;
+        if (xp < 315) {
+            level = 0;
+        } else if ((xp >= 315) && (xp < 1395)) {
+            level = 15;
+        } else {
+            level = 30;
+        }
+        while (convertLevelToXP(level) <= xp) {
+            level++;
+        }
+
+        return level - 1;
+    }
+
+    public static int convertLevelToXP(int level) {
+        int xpForPreviousMilestone;
+        int levelsAboveMilestone;
+        int factor1;
+        int factor2;
+
+        if (level <= 15) {
+            xpForPreviousMilestone = 0;
+            levelsAboveMilestone = level - 0;
+            factor1 = 7;
+            factor2 = 2;
+        } else if ((level > 15) && (level <= 30)) {
+            xpForPreviousMilestone = 315;
+            levelsAboveMilestone = level - 15;
+            factor1 = 37;
+            factor2 = 5;
+        } else {
+            xpForPreviousMilestone = 1395;
+            levelsAboveMilestone = level - 30;
+            factor1 = 112;
+            factor2 = 9;
+        }
+
+        return xpForPreviousMilestone + (levelsAboveMilestone * (2 * factor1 + (levelsAboveMilestone - 1) * factor2) / 2);
     }
 }

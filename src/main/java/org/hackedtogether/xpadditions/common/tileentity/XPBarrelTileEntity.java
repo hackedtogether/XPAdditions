@@ -7,13 +7,14 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hackedtogether.xpadditions.util.XPUtils;
 import org.hackedtogether.xpadditions.common.registries.ModTileEntityTypes;
+import org.hackedtogether.xpadditions.util.XPUtils;
 
 public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntity {
 
-    protected int storedXP;
-    private static int maxStoredXP = 1395;
+    protected int storedXP = 0;
+    private static final String XP_NBT_KEY = "xp";
+    private static final int maxStoredXP = 1395;
 
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -23,103 +24,109 @@ public class XPBarrelTileEntity extends TileEntity implements ITickableTileEntit
 
     @Override
     public void tick() {
-        // Test code that will delete the block under the barrel.
-        // this.level.setBlockAndUpdate(this.worldPosition.below(), Blocks.AIR.defaultBlockState());
     }
 
     @Override
     public CompoundNBT save(CompoundNBT nbt) {
         super.save(nbt);
-        nbt.putInt("xp", this.storedXP);
+        nbt.putInt(XP_NBT_KEY, this.storedXP);
         return nbt;
     }
 
     @Override
     public void load(BlockState state, CompoundNBT nbt) {
         super.load(state, nbt);
-        this.storedXP = nbt.getInt("xp");
+        this.storedXP = nbt.getInt(XP_NBT_KEY);
     }
 
+    //
+    // State
+    //
     public int getStoredXP() {
         return this.storedXP;
     }
 
+    public int getRemainingSpace() {
+        return maxStoredXP - this.storedXP;
+    }
+
+
+    //
+    // Action
+    //
     public void addXP(int xp) {
         xp = this.storedXP + xp;
         if (xp < 0) {
             throw new NumberFormatException("Stored XP cannot be negative");
-        } else if (xp > this.maxStoredXP) {
-            throw new NumberFormatException("Stored XP cannot be greater than " + this.maxStoredXP);
+        } else if (xp > maxStoredXP) {
+            throw new NumberFormatException("Stored XP cannot be greater than " + maxStoredXP);
         }
         this.storedXP = xp;
     }
 
-    public int getRemainingSpace() {
-        return this.maxStoredXP - this.storedXP;
-    }
-
     //
-    // Dispensing
+    // Barrel to Player
     //
+    public void barrelLevelToPlayer(PlayerEntity player) {
+        int xpTotalForNextLevel = XPUtils.convertLevelToXP(player.experienceLevel + 1);
+        int xpToMove = xpTotalForNextLevel - XPUtils.getTotalXPOfPlayer(player);
 
-    public int getMaxDispensableXP() {
-        return this.storedXP;
+        barrelXPToPlayer(player, xpToMove);
     }
 
-    public void dispenseXPLevelToPlayer(PlayerEntity player) {
+    public void barrelXPToPlayer(PlayerEntity player, int xp) {
+        // Make sure barrel has enough xp to give
+        xp = Math.min(this.getStoredXP(), xp);
 
-        int xpForNextLevel = XPUtils.getXPForLevel(player.experienceLevel+1);
-        int xpToMove = xpForNextLevel - XPUtils.getPlayerXP(player);
-
-        xpToMove = Math.min(this.getStoredXP(), xpToMove);
-
-        dispenseXPToPlayer(player, xpToMove);
-    }
-
-    public void dispenseAllXPToPlayer(PlayerEntity player) {
-        dispenseXPToPlayer(player, this.getMaxDispensableXP());
-    }
-
-    public void dispenseXPToPlayer(PlayerEntity player, int xp) {
-        LOGGER.debug(String.format("Dispensing %d XP to '%s'", xp, player.getUUID()));
+        LOGGER.debug(String.format("Transferring %d XP to player '%s'", xp, player.getUUID()));
         if (xp > 0) {
-            XPUtils.addPlayerXP(player, xp);
+            XPUtils.addXPToPlayer(player, xp);
             this.addXP(-xp);
         }
     }
 
-    //
-    // Draining
-    //
-
-    public int getMaxDrainableXP(PlayerEntity player) {
-        return Math.min(this.getRemainingSpace(), player.totalExperience);
+    public void allBarrelXPToPlayer(PlayerEntity player) {
+        barrelXPToPlayer(player, this.getStoredXP());
     }
 
-    public void drainXPLevelFromPlayer(PlayerEntity player) {
+    //
+    // Player to Barrel
+    //
+    public void playerLevelToBarrel(PlayerEntity player) {
 
-        int xpForCurrentLevel = XPUtils.getXPForLevel(player.experienceLevel);
-        int xpToMove = XPUtils.getPlayerXP(player) - xpForCurrentLevel;
-
-        // Player has exactly x > 0 levels (xp bar looks empty)
-        if (xpToMove == 0 && player.experienceLevel > 0) {
-            xpToMove = xpForCurrentLevel - XPUtils.getXPForLevel(player.experienceLevel - 1);
+        // Does player have XP to move
+        int playersXP = XPUtils.getTotalXPOfPlayer(player);
+        if (playersXP == 0) {
+            return;
         }
 
-        xpToMove = Math.min(this.getRemainingSpace(), xpToMove);
+        int xpToMove = 0;
+        int currentLevelAsXP = XPUtils.convertLevelToXP(player.experienceLevel);
+        int totalXPOfPlayer = XPUtils.getTotalXPOfPlayer(player);
 
-        drainXPFromPlayer(player, xpToMove);
+        if (totalXPOfPlayer > currentLevelAsXP) {
+            LOGGER.debug("Player has partial level, so draining to exact level amount");
+            xpToMove = totalXPOfPlayer - currentLevelAsXP;
+        }
+        if (totalXPOfPlayer == currentLevelAsXP) {
+            LOGGER.debug("Player has exact level amount, so draining a complete level");
+            xpToMove = currentLevelAsXP - XPUtils.convertLevelToXP(player.experienceLevel - 1);
+        }
+
+        playerXPtoBarrel(player, xpToMove);
     }
 
-    public void drainAllXPFromPlayer(PlayerEntity player) {
-        drainXPFromPlayer(player, this.getMaxDrainableXP(player));
-    }
-
-    public void drainXPFromPlayer(PlayerEntity player, int xp) {
+    public void playerXPtoBarrel(PlayerEntity player, int xp) {
+        //Make sure barrel can store the amount of XP
+        xp = Math.min(this.getRemainingSpace(), xp);
         LOGGER.debug(String.format("Draining %d XP from '%s'", xp, player.getUUID()));
         if (xp > 0) {
-            XPUtils.addPlayerXP(player, -xp);
+            XPUtils.addXPToPlayer(player, -xp);
             this.addXP(xp);
         }
+    }
+
+    public void allPlayerXPToBarrel(PlayerEntity player) {
+        playerXPtoBarrel(player, player.totalExperience);
     }
 }

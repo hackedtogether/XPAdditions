@@ -8,5 +8,6 @@ import org.hackedtogether.xpadditions.common.tileentity.XPBarrelTileEntity;
 public class ModTileEntityTypes {
     public static final RegistryObject<TileEntityType<XPBarrelTileEntity>> XP_BARREL = ModTileEntityRegister.register("xp_barrel", XPBarrelTileEntity::new, ModBlocks.XP_BARREL);
 
-    public static void register() {}
+    public static void register() {
+    }
 }
