@@ -40,6 +40,7 @@ public class ModLootTableProvider extends LootTableProvider {
         @Override
         protected void addTables() {
             dropSelf(ModBlocks.XP_BLOCK.get());
+            dropSelf(ModBlocks.XP_BARREL.get());
         }
 
         @Override

@@ -15,6 +15,7 @@ public class ModItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         withExistingParent("xp_block", modLoc("block/xp_block"));
+        withExistingParent("xp_barrel", modLoc("block/xp_barrel"));
 
         ModelFile itemGenerated = getExistingFile(mcLoc("item/generated"));
         builder(itemGenerated, "xp_ingot");

@@ -9,6 +9,7 @@ public class Registration {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         new ModBlockRegister(modEventBus);
+        new ModTileEntityRegister(modEventBus);
         new ModItemRegister(modEventBus);
     }
 }
