@@ -39,11 +39,19 @@ public class XPFireworkRocketItem extends Item {
     public ActionResultType useOn(ItemUseContext context) {
 
         World world = context.getLevel();
-        if (!world.isClientSide) {
-            ItemStack itemstack = context.getItemInHand();
-            Vector3d vector3d = context.getClickLocation();
-            Direction direction = context.getClickedFace();
-            PlayerEntity player = context.getPlayer();
+        ItemStack itemstack = context.getItemInHand();
+        Vector3d vector3d = context.getClickLocation();
+        Direction direction = context.getClickedFace();
+        PlayerEntity player = context.getPlayer();
+
+        // Check if the player is crouching (Change boost duration)
+        if (player.isCrouching()) {
+
+            // Change/fetch the boost duration
+            this.changeFlightDuration(player, itemstack);
+        }
+
+        else if (!world.isClientSide) {
 
             LOGGER.debug("PlayerEntity: '" + player.getUUID() + "' launching XP firework rocket");
 
@@ -68,7 +76,7 @@ public class XPFireworkRocketItem extends Item {
             this.save(itemstack);
 
             // Create the firework
-            XPFireworkRocketEntity xpFireworkRocketEntity = new XPFireworkRocketEntity(world, vector3d.x + (double)direction.getStepX() * 0.15D, vector3d.y + (double)direction.getStepY() * 0.15D, vector3d.z + (double)direction.getStepZ() * 0.15D, itemstack, xpToUse);
+            XPFireworkRocketEntity xpFireworkRocketEntity = new XPFireworkRocketEntity(world, vector3d.x + (double) direction.getStepX() * 0.15D, vector3d.y + (double) direction.getStepY() * 0.15D, vector3d.z + (double) direction.getStepZ() * 0.15D, itemstack, xpToUse);
             world.addFreshEntity(xpFireworkRocketEntity);
         }
 
@@ -91,15 +99,9 @@ public class XPFireworkRocketItem extends Item {
         if (player.isCrouching()) {
 
             // TODO: This is being called twice
-
             // Change/fetch the boost duration
-            this.changeFlightDuration(stack);
+            this.changeFlightDuration(player, stack);
 
-            // Display a message and play a sound
-            player.displayClientMessage(new TranslationTextComponent("message.xpadditions.change_flight_duration", this.flightDuration, maxBoostDuration), true);
-            player.playSound(SoundEvents.STONE_BUTTON_CLICK_OFF, 1F, 1F);
-
-            LOGGER.debug(String.format("Set boost duration to %d/%d", this.flightDuration, maxBoostDuration));
             return ActionResult.pass(player.getItemInHand(hand));
         }
 
@@ -176,14 +178,24 @@ public class XPFireworkRocketItem extends Item {
         this.flightDuration = (int) fireworks.getByte("Flight");
     }
 
-    protected void changeFlightDuration(ItemStack stack) {
+    protected void changeFlightDuration(PlayerEntity player, ItemStack stack) {
+
         this.load(stack);
+
+        // Change the duration
         if (this.flightDuration < this.maxBoostDuration) {
             this.flightDuration++;
         } else {
             this.flightDuration = 1;
         }
+
         this.save(stack);
+
+        // Display a message and play a sound
+        player.displayClientMessage(new TranslationTextComponent("message.xpadditions.change_flight_duration", this.flightDuration, maxBoostDuration), true);
+        player.playSound(SoundEvents.STONE_BUTTON_CLICK_OFF, 1F, 1F);
+
+        LOGGER.debug(String.format("Set boost duration to %d/%d", this.flightDuration, maxBoostDuration));
     }
 
     protected ItemStack getNonExplosiveCopy(ItemStack stack, int flightDuration) {
