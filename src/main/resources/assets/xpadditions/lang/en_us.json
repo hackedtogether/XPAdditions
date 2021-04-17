@@ -1,5 +1,7 @@
 {
   "item.xpadditions.xp_ingot": "XP Ingot",
   "block.xpadditions.xp_block": "XP Block",
-  "block.xpadditions.xp_barrel": "XP Barrel"
+  "block.xpadditions.xp_barrel": "XP Barrel",
+  "item.xpadditions.xp_firework_rocket": "XP Firework Rocket",
+  "message.xpadditions.change_flight_duration": "Flight duration: %s/%s"
 }

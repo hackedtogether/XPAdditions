@@ -19,6 +19,7 @@ public class ModItemModelProvider extends ItemModelProvider {
 
         ModelFile itemGenerated = getExistingFile(mcLoc("item/generated"));
         builder(itemGenerated, "xp_ingot");
+        builder(itemGenerated, "xp_firework_rocket");
     }
 
     private ItemModelBuilder builder(ModelFile itemGenerated, String name) {

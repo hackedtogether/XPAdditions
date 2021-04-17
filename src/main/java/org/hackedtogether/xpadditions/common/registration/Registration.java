@@ -11,5 +11,6 @@ public class Registration {
         new ModBlockRegister(modEventBus);
         new ModTileEntityRegister(modEventBus);
         new ModItemRegister(modEventBus);
+        new ModEntityRegister(modEventBus);
     }
 }
